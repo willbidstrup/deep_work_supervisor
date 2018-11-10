@@ -9,7 +9,6 @@ Using R Markdown for interactive exploration.
 
 ```{r}
 # TODO - create time of day variable 
-# TODO - pad dates so all dates are represented to measure total possible time
 ```
 
 
@@ -56,9 +55,54 @@ d$date_full <- as.Date(d$date_full, format = "%d %b %Y %H:%M:%S")
 
 ```
 
-
 ```{r}
 d$hours <- d$Duration / 60
+```
+
+# Export
+
+```{r}
+write_csv(d, "data_transformed/curated_BeFocused.csv")
+```
+
+
+```{r}
+# What is a normal day like?
+daily_all <-d %>%
+    pad %>%
+  group_by(date_full) %>%
+  summarise(hours_in_day = sum(hours, na.rm = T))
+
+daily_all$avail_time <- 8
+daily_all$focused_prop <- round((daily_all$hours_in_day / daily_all$avail_time), digits = 2)
+
+daily <-d %>%
+  group_by(date_full, `Assigned task`) %>%
+  summarise(hours_in_day = sum(hours, na.rm = T))
+
+
+write_csv(daily_all, "data_transformed/daily_all.csv")
+
+```
+
+
+```{r}
+# Trend of time spent
+trend_type <- d %>%
+  group_by(date_full, `Assigned task`) %>%
+  summarise(time_spent = sum(hours, na.rm = T))
+
+write_csv(trend_type, "data_transformed/trend_type.csv")
+```
+
+
+```{r}
+overall_deep_work_score <- daily_all %>%
+  summarise(total_avail = sum(avail_time, na.rm = T),
+            total_focus = sum(hours_in_day, na.rm = T),
+            focus_score = total_focus / total_avail) 
+
+write_csv(overall_deep_work_score, "data_transformed/deep_work_score.csv")
 ```
 
 
@@ -70,38 +114,21 @@ ggplot(data = d, aes(x = hours, fill = `Assigned task`)) +
   geom_density(alpha = 0.2)
 ```
 
-
 ```{r}
-# What is a normal day like?
-daily <-d %>%
-  group_by(date_full, `Assigned task`) %>%
-  summarise(hours_in_day = sum(hours, na.rm = T))
-
 ggplot(data = daily, aes(x = `Assigned task`, y = hours_in_day, col = `Assigned task`)) +
   geom_boxplot(alpha = 0.5) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
   coord_flip()
 ```
 
-
 ```{r}
-daily_all <-d %>%
-    pad %>%
-  group_by(date_full) %>%
-  summarise(hours_in_day = sum(hours, na.rm = T))
-
 ggplot(data = daily_all, aes(x = hours_in_day)) +
   geom_histogram() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) 
 ```
 
-
-
 ```{r}
 # Look at effective use of time
-daily_all$avail_time <- 8
-daily_all$focused_prop <- round((daily_all$hours_in_day / daily_all$avail_time), digits = 2)
-
 ggplot(data = daily_all, aes(x = focused_prop)) +
   geom_histogram() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) 
@@ -109,35 +136,15 @@ ggplot(data = daily_all, aes(x = focused_prop)) +
 ```
 
 ```{r}
-overall_deep_work_score <- daily_all %>%
-  summarise(total_avail = sum(avail_time, na.rm = T),
-            total_focus = sum(hours_in_day, na.rm = T),
-            focus_score = total_focus / total_avail) 
-```
-
-
-
-```{r}
 # Trend of focus % over time - am I getting better or worse??
-
 ggplot(data = daily_all, aes(x = date_full, y = focused_prop)) +
   geom_point() +
-  geom_smooth()
-
-
+  geom_smooth() +
+  theme_minimal()
 
 ```
 
-
-
 ```{r}
-# Trend of time spent
-
-trend_type <- d %>%
-  group_by(date_full, `Assigned task`) %>%
-  summarise(time_spent = sum(hours, na.rm = T))
-
-
 ggplot(data = trend_type, aes(x = date_full, y = time_spent, fill = `Assigned task`)) +
   geom_bar(stat = "identity")
 

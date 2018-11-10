@@ -1,0 +1,55 @@
+---
+title: "Deep Work Supervisor"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(here)
+library(tidyverse)
+library(padr)
+```
+
+
+```{r}
+d <- read_csv(here("/data_transformed/curated_BeFocused.csv"))
+daily_all <- read_csv(here("/data_transformed/daily_all.csv"))
+deep_work_score <- read_csv(here("/data_transformed/deep_work_score.csv"))
+trend_type <- read_csv(here("/data_transformed/trend_type.csv"))
+```
+
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### How much Deep Work am I doing?
+
+```{r}
+ggplot(data = daily_all, aes(x = date_full, y = focused_prop)) +
+  geom_point() +
+  geom_smooth() +
+  theme_minimal()
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### What kinds of tasks am I spending most time on?
+
+```{r}
+ggplot(data = d, aes(x = hours, fill = `Assigned task`)) +
+  geom_density(alpha = 0.2) +
+  theme_minimal()
+```
+
+### How has the type of tasks changed over time?
+
+```{r}
+ggplot(data = trend_type, aes(x = date_full, y = time_spent, fill = `Assigned task`)) +
+  geom_bar(stat = "identity") +
+  theme_minimal()
+```
+
