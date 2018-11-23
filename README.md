@@ -2,18 +2,30 @@
 
 The Deep Work Supervisor is here to help you do more Deep Work by showing you what you have been doing.    
 
-It provides improved reprorting from the Be Focused Pro app.  
-
-Initial flow;  
-
-- Export .csv from Be Focused App  
-- Create improved reporting  
-- Publish to Data Science Explorer page as staging/trial area
+It provides improved reporting from the Be Focused Pro app.  
 
 
-# TODO  
+# Scripts
 
-- Determine final publishing area, perhaps a Shiny app?  
+## Pre-processing  
+
+Take BeFocused output .csv and tweak it to facilitate analysis and visualization.  
+
+## Exploratory Data Analysis
+
+Mine the data for interesting observations.  
+
+Some ideas;  
+
+- trend of total productive time vs available time  
+- a total deep work 'score' 
+- trend per category  
+- forecast 12 month out with lagged performance 
+
+
+# Shiny App  
+
+Production insights for published dashboard.  
 
 
 # Git branches
