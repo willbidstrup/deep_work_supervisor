@@ -150,3 +150,30 @@ ggplot(data = trend_type, aes(x = date_full, y = time_spent, fill = `Assigned ta
 
 ```
 
+
+
+## Simple shiny prototype
+
+How much deep work of a particular type have I been doing?
+
+```{r}
+# Create data which is daily info of number of hours by category
+cat_names <- unique(daily$`Assigned task`)
+
+```
+
+
+```{r}
+ggplot(data = daily, aes(x = date_full, y = hours_in_day, col = `Assigned task`)) +
+  geom_line() +
+  theme_minimal()
+```
+
+
+
+```{r}
+ggplot(data = daily, aes(x = hours_in_day)) +
+  geom_histogram() +
+  theme_minimal()
+```
+
