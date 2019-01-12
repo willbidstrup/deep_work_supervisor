@@ -1,7 +1,7 @@
 ---
 title: "Deep Work Supervisor"
 author: "Will Bidstrup"
-date: "2018-11-10"
+date: "2019-01-12"
 output: html_document
 ---
 
@@ -51,13 +51,29 @@ I change it into a date format.
 
 ```{r}
 d$date_full <- d$`Start date`
-d$date_full <- as.Date(d$date_full, format = "%d %b %Y %H:%M:%S")
+
+d <- d %>%
+  separate(date_full, into = c('Date', 'Time'), sep = 11)
+
+d$Date <- as.Date(d$Date, format = "%d %b %Y")
 
 ```
 
 ```{r}
 d$hours <- d$Duration / 60
 ```
+
+
+```{r}
+# Gather tasks into categories
+
+unique(d$`Assigned task`)
+d$category <- ifelse(d$`Assigned task` %in% c("YABP", "Experiment In Art", "Summoner Of Games", "Data Science Explorer", "YABP", "RPG Prep", "Correspondance"), "Craft", 
+                     ifelse(d$`Assigned task` == "P.S Work High Value", "Work",
+                            ifelse(d$`Assigned task` == "Wealth", "Wealth",
+                                   ifelse(d$`Assigned task` == "Study", "Study", "Other"))))
+```
+
 
 # Export
 
@@ -68,16 +84,16 @@ write_csv(d, "data_transformed/curated_BeFocused.csv")
 
 ```{r}
 # What is a normal day like?
-daily_all <-d %>%
+daily_all <- d %>%
     pad %>%
-  group_by(date_full) %>%
+  group_by(Date) %>%
   summarise(hours_in_day = sum(hours, na.rm = T))
 
 daily_all$avail_time <- 8
 daily_all$focused_prop <- round((daily_all$hours_in_day / daily_all$avail_time), digits = 2)
 
 daily <-d %>%
-  group_by(date_full, `Assigned task`) %>%
+  group_by(Date, category) %>%
   summarise(hours_in_day = sum(hours, na.rm = T))
 
 
@@ -89,7 +105,7 @@ write_csv(daily_all, "data_transformed/daily_all.csv")
 ```{r}
 # Trend of time spent
 trend_type <- d %>%
-  group_by(date_full, `Assigned task`) %>%
+  group_by(Date, category) %>%
   summarise(time_spent = sum(hours, na.rm = T))
 
 write_csv(trend_type, "data_transformed/trend_type.csv")
@@ -108,14 +124,28 @@ write_csv(overall_deep_work_score, "data_transformed/deep_work_score.csv")
 
 # Visuals
 
+
+```{r}
+# Deep Work quantity by day
+ggplot(data = trend_type %>%
+         select(Date, time_spent) %>%
+         group_by(Date) %>%
+         summarise(total_per_day = sum(time_spent)), aes(x = Date, y = total_per_day)) +
+  geom_point() +
+  geom_smooth()
+
+```
+
+
+
 ```{r}
 # Density
-ggplot(data = d, aes(x = hours, fill = `Assigned task`)) +
+ggplot(data = d, aes(x = hours, fill = category)) +
   geom_density(alpha = 0.2)
 ```
 
 ```{r}
-ggplot(data = daily, aes(x = `Assigned task`, y = hours_in_day, col = `Assigned task`)) +
+ggplot(data = daily, aes(x = category, y = hours_in_day, col = category)) +
   geom_boxplot(alpha = 0.5) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
   coord_flip()
@@ -137,7 +167,7 @@ ggplot(data = daily_all, aes(x = focused_prop)) +
 
 ```{r}
 # Trend of focus % over time - am I getting better or worse??
-ggplot(data = daily_all, aes(x = date_full, y = focused_prop)) +
+ggplot(data = daily_all, aes(x = Date, y = focused_prop)) +
   geom_point() +
   geom_smooth() +
   theme_minimal()
@@ -145,7 +175,7 @@ ggplot(data = daily_all, aes(x = date_full, y = focused_prop)) +
 ```
 
 ```{r}
-ggplot(data = trend_type, aes(x = date_full, y = time_spent, fill = `Assigned task`)) +
+ggplot(data = trend_type, aes(x = Date, y = time_spent, fill = category)) +
   geom_bar(stat = "identity")
 
 ```
@@ -164,7 +194,7 @@ cat_names <- unique(daily$`Assigned task`)
 
 
 ```{r}
-ggplot(data = daily, aes(x = date_full, y = hours_in_day, col = `Assigned task`)) +
+ggplot(data = daily, aes(x = Date, y = hours_in_day, col = category)) +
   geom_line() +
   theme_minimal()
 ```

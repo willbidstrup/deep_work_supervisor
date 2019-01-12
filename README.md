@@ -1,5 +1,7 @@
 # Deep Work Supervisor
 
+Managing time is important because time is the most precious thing we have.
+
 The Deep Work Supervisor is here to help you do more Deep Work by showing you what you have been doing.    
 
 It provides improved reporting from the Be Focused Pro app.  
