@@ -75,6 +75,24 @@ d$category <- ifelse(d$`Assigned task` %in% c("YABP", "Experiment In Art", "Summ
 ```
 
 
+Create weekly
+```{r}
+
+
+```
+
+
+```{r}
+# library(dplyr)
+# library(lubridate)
+# 
+# df2 %>% mutate(week = (year(Order_Date) - year(min(Order_Date)))*52 + 
+#                  week(Order_Date) - week(min(Order_Date)),
+#                week2 = (as.numeric(Order_Date) %/% 7) - (as.numeric(min(Order_Date)) %/% 7)) %>%
+#   arrange(Order_Date)
+```
+
+
 # Export
 
 ```{r}
@@ -99,6 +117,32 @@ daily <-d %>%
 
 write_csv(daily_all, "data_transformed/daily_all.csv")
 
+```
+
+
+
+```{r}
+# What is weekly like?
+library(lubridate)
+
+weekly <- daily
+
+# Assign week number
+weekly <- weekly %>%
+  mutate(week = week(Date))
+
+# Assign year as int
+weekly$year <- ifelse(weekly$Date >= "2019-01-01", 2019, 2018)
+
+# Collapse into weekly data
+
+weekly <- weekly %>%
+  group_by(week, category, year) %>%
+summarise(hours_in_week = sum(hours_in_day))
+
+# Export 
+
+write_csv(weekly, "data_transformed/weekly.csv")
 ```
 
 
@@ -175,11 +219,30 @@ ggplot(data = daily_all, aes(x = Date, y = focused_prop)) +
 ```
 
 ```{r}
-ggplot(data = trend_type, aes(x = Date, y = time_spent, fill = category)) +
-  geom_bar(stat = "identity")
+ggplot(data = trend_type, aes(x = time_spent, fill = category)) +
+  geom_density(alpha = 0.5) +
+  theme_minimal()
 
 ```
 
+
+
+
+```{r}
+ggplot(data = weekly, aes(x = hours_in_week, fill = category)) +
+  geom_density(alpha = 0.5) +
+  theme_minimal()
+
+```
+
+
+```{r}
+ggplot(data = trend_type, aes(x = time_spent, fill = category)) +
+  geom_density(alpha = 0.5) +
+  theme_minimal() +
+  facet_wrap(~ category, nrow = 3)
+
+```
 
 
 ## Simple shiny prototype
@@ -200,6 +263,12 @@ ggplot(data = daily, aes(x = Date, y = hours_in_day, col = category)) +
 ```
 
 
+```{r}
+ggplot(data = weekly, aes(x = week, y = hours_in_week)) +
+  geom_line() +
+  theme_minimal() +
+  facet_grid(. ~ year)
+```
 
 ```{r}
 ggplot(data = daily, aes(x = hours_in_day)) +
