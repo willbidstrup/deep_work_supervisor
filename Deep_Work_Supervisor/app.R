@@ -11,7 +11,7 @@ library(shiny)
 library(here)
 library(tidyverse)
 
-daily_all <- read_csv("../data_transformed/daily_all.csv")
+daily_all <- read_csv("daily_all.csv")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(

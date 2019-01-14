@@ -1,0 +1,12 @@
+name: deep_work_supervisor
+title:
+username:
+account: will-bidstrup
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 640209
+bundleId: 1812702
+url: https://will-bidstrup.shinyapps.io/deep_work_supervisor/
+when: 1547447284.24154
+asMultiple: FALSE
+asStatic: FALSE
