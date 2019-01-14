@@ -8,27 +8,26 @@
 #
 
 library(shiny)
+library(here)
+library(tidyverse)
 
+daily_all <- read_csv("../data_transformed/daily_all.csv")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-   
+   h1("Deep Work Supervisor - Test"),
    # Application title
-   titlePanel("Deep Work Supervisor"),
+   titlePanel(""),
    
    # Sidebar with a slider input for number of bins 
    sidebarLayout(
       sidebarPanel(
-         sliderInput("bins",
-                     "Number of bins:",
-                     min = 1,
-                     max = 50,
-                     value = 30)
+"The Deep Work Supervisor app will show improved statistics on intervals from the BeFocused app."
       ),
       
-      # Show a plot of the generated distribution
+      # Show a plot
       mainPanel(
-         plotOutput("distPlot")
+         plotOutput("density_plot")
       )
    )
 )
@@ -36,13 +35,15 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
    
-   output$distPlot <- renderPlot({
-      # generate bins based on input$bins from ui.R
-      x    <- faithful[, 2] 
-      bins <- seq(min(x), max(x), length.out = input$bins + 1)
-      
-      # draw the histogram with the specified number of bins
-      hist(x, breaks = bins, col = 'darkgray', border = 'white')
+   output$density_plot <- renderPlot({
+      # generate plot
+      x <- daily_all
+      # draw the plot
+      ggplot(data = x, aes(x = Date, y = focused_prop)) +
+        geom_point() +
+        geom_smooth() +
+        theme_minimal() +
+        labs(title = "Trend of focused time as a proportion of total time")
    })
 }
 
