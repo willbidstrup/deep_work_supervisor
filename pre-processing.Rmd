@@ -60,6 +60,7 @@ d$Date <- as.Date(d$Date, format = "%d %b %Y")
 ```
 
 ```{r}
+d$Duration <- 30 # Assume 30mins spent including relax/reflect time
 d$hours <- d$Duration / 60
 ```
 
@@ -72,24 +73,6 @@ d$category <- ifelse(d$`Assigned task` %in% c("YABP", "Experiment In Art", "Summ
                      ifelse(d$`Assigned task` == "P.S Work High Value", "Work",
                             ifelse(d$`Assigned task` == "Wealth", "Wealth",
                                    ifelse(d$`Assigned task` == "Study", "Study", "Other"))))
-```
-
-
-Create weekly
-```{r}
-
-
-```
-
-
-```{r}
-# library(dplyr)
-# library(lubridate)
-# 
-# df2 %>% mutate(week = (year(Order_Date) - year(min(Order_Date)))*52 + 
-#                  week(Order_Date) - week(min(Order_Date)),
-#                week2 = (as.numeric(Order_Date) %/% 7) - (as.numeric(min(Order_Date)) %/% 7)) %>%
-#   arrange(Order_Date)
 ```
 
 
@@ -116,6 +99,7 @@ daily <-d %>%
 
 
 write_csv(daily_all, "data_transformed/daily_all.csv")
+write_csv(daily_all, "data_transformed/daily.csv")
 
 ```
 
@@ -182,11 +166,6 @@ ggplot(data = trend_type %>%
 
 
 
-```{r}
-# Density
-ggplot(data = d, aes(x = hours, fill = category)) +
-  geom_density(alpha = 0.2)
-```
 
 ```{r}
 ggplot(data = daily, aes(x = category, y = hours_in_day, col = category)) +
