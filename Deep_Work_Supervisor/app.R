@@ -12,6 +12,7 @@ library(here)
 library(tidyverse)
 
 daily_all <- read_csv("daily_all.csv")
+trend_type <- read_csv("trend_type.csv")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -22,12 +23,12 @@ ui <- fluidPage(
    # Sidebar with a slider input for number of bins 
    sidebarLayout(
       sidebarPanel(
-"The Deep Work Supervisor app will show improved statistics on intervals from the BeFocused app."
+selectInput("category", "Select a category", choices = c("Work", "Craft", "Study", "Wealth", "Other"))
       ),
       
       # Show a plot
       mainPanel(
-         plotOutput("density_plot")
+         plotOutput("line_plot")
       )
    )
 )
@@ -35,15 +36,17 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
    
-   output$density_plot <- renderPlot({
+   output$line_plot <- renderPlot({
       # generate plot
-      x <- daily_all
+      x <- trend_type
       # draw the plot
-      ggplot(data = x, aes(x = Date, y = focused_prop)) +
-        geom_point() +
+      ggplot(data = x %>%
+               filter(category == input$category), aes(x = Date, y = time_spent)) +
+        geom_point(alpha = 0.2) +
         geom_smooth() +
-        theme_minimal() +
-        labs(title = "Trend of focused time as a proportion of total time")
+        ylim(0, 6) +
+        xlim(min(x$Date), max(x$Date)) +
+        theme_minimal()
    })
 }
 
