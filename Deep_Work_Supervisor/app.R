@@ -26,8 +26,8 @@ selectInput("category", "Select a category", choices = c("Work", "Craft", "Study
       # Show a plot
       mainPanel(
          plotOutput("line_plot"),
-         plotOutput("box_plot"),
-         textOutput("summary_stats")
+         verbatimTextOutput("summary_stats"),
+         plotOutput("box_plot")
       )
    )
 )
@@ -40,6 +40,12 @@ server <- function(input, output) {
    
   ## Reactive variables
   
+  stats_table <- reactive({
+    summary(trend_type %>% 
+              filter(category == input$category) %>%
+              select(time_spent))
+    
+  })
   
   
   ## PLOT 1
@@ -58,9 +64,9 @@ server <- function(input, output) {
    
    
    ## SUMMARY TEXT
-   output$summary_stats <- renderText({
+   output$summary_stats <- renderPrint({
 
-
+  print(stats_table())
      
    })
    
