@@ -1,11 +1,6 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
+
+
+########################## SETUP ##############################
 
 library(shiny)
 library(here)
@@ -14,7 +9,9 @@ library(tidyverse)
 daily <- read_csv("daily.csv")
 trend_type <- read_csv("trend_type.csv")
 
-# Define UI for application that draws a histogram
+
+########################## UI ##############################
+
 ui <- fluidPage(
    h1("Deep Work Supervisor - Test"),
    # Application title
@@ -29,14 +26,23 @@ selectInput("category", "Select a category", choices = c("Work", "Craft", "Study
       # Show a plot
       mainPanel(
          plotOutput("line_plot"),
-         plotOutput("box_plot")
+         plotOutput("box_plot"),
+         textOutput("summary_stats")
       )
    )
 )
 
-# Define server logic required to draw a histogram
+
+########################## SERVER ##############################
+
+
 server <- function(input, output) {
    
+  ## Reactive variables
+  
+  
+  
+  ## PLOT 1
    output$line_plot <- renderPlot({
       # generate plot
       x <- trend_type
@@ -50,6 +56,17 @@ server <- function(input, output) {
         theme_minimal()
    })
    
+   
+   ## SUMMARY TEXT
+   output$summary_stats <- renderText({
+
+
+     
+   })
+   
+   
+   
+   ## PLOT 2
    output$box_plot <- renderPlot({
      # generate plot
      x <- trend_type
@@ -66,6 +83,9 @@ server <- function(input, output) {
    
    
 }
+
+
+
 
 # Run the application 
 shinyApp(ui = ui, server = server)
