@@ -1,0 +1,185 @@
+---
+title: "Targets"
+author: "Will Bidstrup"
+date: "2019-01-12"
+output: html_document
+---
+
+Set targets for Deep Work Supervisor.  
+
+```{r}
+# TODO - create time of day variable 
+```
+
+
+```{r}
+install.packages("here")
+library(here)
+install.packages("tidyverse")
+library(tidyverse)
+install.packages("padr")
+library(padr)
+```
+
+
+Here is the year of 2019.  
+
+First I will create the year with padr. 
+
+```{r}
+dates <- as.Date(c("2019-01-01", "2019-01-02", "2019-12-30", "2019-12-31")) 
+dates <- as.data.frame(dates)
+dates  <- dates %>%
+  pad()
+```
+
+# Treating workdays differently to weekends and vacation
+
+```{r}
+# Identify the weekends
+weekends <- dates$dates[weekdays(dates$dates) %in% c("Saturday", "Sunday")]  
+
+# Identify public holidays
+public_holidays <- as.Date(c("2019-01-01", "2019-01-28", "2019-03-11", "2019-04-19",
+                             "2019-04-20", "2019-04-22", "2019-04-25", "2019-06-10",
+                             "2019-10-07", "2019-12-24", "2019-12-25", "2019-12-26", "2019-12-31"))
+
+# Identify vacation days x 20
+vacations <- as.Date(c("2019-03-04", "2019-03-05", "2019-03-06", "2019-03-07", "2019-03-08",
+                      "2019-07-01", "2019-07-02", "2019-07-03", "2019-07-04", "2019-07-05",
+                      "2019-09-16", "2019-09-17", "2019-09-18", "2019-09-19", "2019-09-20",
+                      "2019-11-04", "2019-11-05", "2019-11-06", "2019-11-07", "2019-11-08"))
+
+# Create tags
+dates$day_type <- ifelse(dates$dates %in% vacations, "vacation",
+                         ifelse(dates$dates %in% public_holidays, "public_holiday", 
+                                ifelse(dates$dates %in% weekends, "weekend", "work")))
+
+summary(as.factor(dates$day_type))
+```
+
+
+# Setting target number of intervals
+
+```{r}
+# Study
+# Wealth
+# Craft
+# Work
+```
+
+```{r}
+# Study target
+dates$study_target <- ifelse(dates$dates %in% vacations, 0,
+                         ifelse(dates$dates %in% public_holidays, 0, 
+                                ifelse(dates$dates %in% weekends, 2, 4)))
+
+study_total_sessions <- sum(dates$study_target)
+study_total_minutes <- study_total_sessions * 30
+study_total_hours <- round(study_total_minutes / 60)
+
+```
+
+```{r}
+# Wealth target
+dates$wealth_target <- ifelse(dates$dates %in% vacations, 0,
+                         ifelse(dates$dates %in% public_holidays, 0, 
+                                ifelse(dates$dates %in% weekends, 2, 2)))
+
+wealth_total_sessions <- sum(dates$wealth_target)
+wealth_total_minutes <- wealth_total_sessions * 30
+wealth_total_hours <- round(wealth_total_minutes / 60)
+
+```
+
+```{r}
+# Craft target
+dates$craft_target <- ifelse(dates$dates %in% vacations, 4,
+                         ifelse(dates$dates %in% public_holidays, 0, 
+                                ifelse(dates$dates %in% weekends, 4, 2)))
+
+craft_total_sessions <- sum(dates$craft_target)
+craft_total_minutes <- craft_total_sessions * 30
+craft_total_hours <- round(craft_total_minutes / 60)
+
+```
+
+```{r}
+# Work target
+dates$work_target <- ifelse(dates$dates %in% vacations, 0,
+                         ifelse(dates$dates %in% public_holidays, 0, 
+                                ifelse(dates$dates %in% weekends, 0, 12)))
+
+work_total_sessions <- sum(dates$work_target)
+work_total_minutes <- work_total_sessions * 30
+work_total_hours <- work_total_minutes / 60
+
+work_deepwork_efficiency <- round(work_total_hours / 2080, digits = 2)
+
+```
+
+```{r}
+# Total target
+dates$total_target <- dates$study_target + dates$wealth_target + dates$craft_target + dates$work_target
+
+total_deepwork_sessions <- sum(dates$total_target)
+total_deepwork_minutes <- total_deepwork_sessions * 25
+total_deepwork_hours <- total_deepwork_minutes / 60
+
+total_deepwork_efficiency <- round(total_deepwork_hours / 2920, digits = 2)
+
+```
+
+
+# Tidy
+
+```{r}
+names(dates)
+dates_tidy <- dates %>%
+  select( dates, day_type, study_target, wealth_target, craft_target, work_target) %>%
+  gather(session_type, session_count, 3:6) %>%
+  mutate(session_hours = round((session_count * 30) / 60))
+  
+```
+
+
+# Export
+
+```{r}
+write_csv(dates_tidy, "data_transformed/targets.csv")
+```
+
+
+
+# Compare actual to target
+
+
+Import actual
+
+```{r}
+actual <- read_csv("Deep_Work_Supervisor/trend_type.csv")
+```
+
+
+
+Join actual to target
+```{r}
+# Remove 'Other'
+actual <- actual %>%
+  filter(category != "Other")
+
+# Create 'category' for join
+dates_tidy$category <- ifelse(dates_tidy$session_type == "work_target", "Work",
+                              ifelse(dates_tidy$session_type == "study_target", "Study",
+                                     ifelse(dates_tidy$session_type == "craft_target", "Craft",
+                                            ifelse(dates_tidy$session_type == "wealth_target", "Wealth", "Other"))))
+
+# Rename dates
+dates_tidy$Date <- dates_tidy$dates
+
+progress_so_far <- dates_tidy %>%
+  left_join(actual, by = c("Date", "category"))
+```
+
+
+
