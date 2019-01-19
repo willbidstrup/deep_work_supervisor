@@ -11,7 +11,7 @@ library(shiny)
 library(here)
 library(tidyverse)
 
-daily_all <- read_csv("daily_all.csv")
+daily <- read_csv("daily.csv")
 trend_type <- read_csv("trend_type.csv")
 
 # Define UI for application that draws a histogram
@@ -28,7 +28,8 @@ selectInput("category", "Select a category", choices = c("Work", "Craft", "Study
       
       # Show a plot
       mainPanel(
-         plotOutput("line_plot")
+         plotOutput("line_plot"),
+         plotOutput("box_plot")
       )
    )
 )
@@ -48,6 +49,22 @@ server <- function(input, output) {
         xlim(min(x$Date), max(x$Date)) +
         theme_minimal()
    })
+   
+   output$box_plot <- renderPlot({
+     # generate plot
+     x <- trend_type
+     # draw the plot
+     ggplot(data = x, aes(x = category, y = time_spent, col = category)) +
+       geom_boxplot(alpha = 0.5) +
+       ylim(0, 6) +
+       theme_minimal()
+
+     
+   })
+   
+   
+   
+   
 }
 
 # Run the application 
