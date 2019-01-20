@@ -13,11 +13,11 @@ Set targets for Deep Work Supervisor.
 
 
 ```{r}
-install.packages("here")
+
 library(here)
-install.packages("tidyverse")
+
 library(tidyverse)
-install.packages("padr")
+
 library(padr)
 ```
 
@@ -108,7 +108,7 @@ craft_total_hours <- round(craft_total_minutes / 60)
 # Work target
 dates$work_target <- ifelse(dates$dates %in% vacations, 0,
                          ifelse(dates$dates %in% public_holidays, 0, 
-                                ifelse(dates$dates %in% weekends, 0, 12)))
+                                ifelse(dates$dates %in% weekends, 0, 8)))
 
 work_total_sessions <- sum(dates$work_target)
 work_total_minutes <- work_total_sessions * 30
@@ -182,4 +182,48 @@ progress_so_far <- dates_tidy %>%
 ```
 
 
+```{r}
+# Fix NA
+#progress_so_far$time_spent[which(is.na(progress_so_far$time_spent))] <- 0
+
+progress_so_far$achievement <- progress_so_far$time_spent - progress_so_far$session_hours
+
+```
+
+
+
+```{r}
+write_csv(progress_so_far, "data_transformed/progress_so_far.csv")
+```
+
+# Visuals
+
+```{r}
+ggplot(data = progress_so_far, aes(x = Date, y = achievement)) +
+  geom_point() +
+  facet_wrap(~ category, nrow = 2)
+```
+
+
+The sum of achievement tells me if I am over or under target, and by how many hours
+
+
+```{r}
+work_achieve_score <- progress_so_far %>%
+  filter(category == "Work") %>%
+  summarise(achieve_score = sum(achievement, na.rm = TRUE))
+
+craft_achieve_score <- progress_so_far %>%
+  filter(category == "Craft") %>%
+  summarise(achieve_score = sum(achievement, na.rm = TRUE))
+
+wealth_achieve_score <- progress_so_far %>%
+  filter(category == "Wealth") %>%
+  summarise(achieve_score = sum(achievement, na.rm = TRUE))
+
+study_achieve_score <- progress_so_far %>%
+  filter(category == "Study") %>%
+  summarise(achieve_score = sum(achievement, na.rm = TRUE))
+
+```
 

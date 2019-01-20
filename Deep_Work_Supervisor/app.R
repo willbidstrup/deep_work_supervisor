@@ -9,7 +9,6 @@ library(tidyverse)
 daily <- read_csv("daily.csv")
 trend_type <- read_csv("trend_type.csv")
 
-
 ########################## UI ##############################
 
 ui <- fluidPage(
@@ -20,17 +19,38 @@ ui <- fluidPage(
    # Sidebar with a slider input for number of bins 
    sidebarLayout(
       sidebarPanel(
-        checkboxGroupInput("category", "Select a category", choices = c("Work", "Craft", "Study", "Wealth", "Other"))
+        checkboxGroupInput("category", "Select categories", choices = c("Work", "Craft", "Study", "Wealth", "Other")),
+        dateRangeInput("date_range", "Select date range", min = "2018-01-01", max = "2019-12-31", start = "2018-07-31") 
       ),
       
-      # Show a plot
+      # Output
       mainPanel(
-         plotOutput("line_plot"),
-         verbatimTextOutput("summary_stats"),
-         plotOutput("box_plot")
-      )
-   )
-)
+        
+        tabsetPanel(type = "tabs",
+                    
+                    
+                    tabPanel(title = "Actual",
+                             h5("What I have been doing"),
+                             plotOutput(outputId = "line_plot"),
+                             plotOutput(outputId = "box_plot")),
+                    
+                    
+                    
+                    tabPanel(title = "vs 2019 Target",
+                             h5("If I am on track, what is the gap?"),
+                             verbatimTextOutput(outputId = "summary_stats")),
+                    
+                    
+                    
+                    
+                    tabPanel(title = "Forecast",
+                             h5("What is likely to happen"))
+
+                    
+        ) # End tabsetPanel
+      ) # End mainPanel
+   ) # End sidebarLayout
+) # End fluidPage
 
 
 ########################## SERVER ##############################
@@ -39,7 +59,6 @@ ui <- fluidPage(
 server <- function(input, output) {
    
   ## Reactive variables
-  
   stats_table <- reactive({
     summary(trend_type %>% 
               filter(category %in% input$category) %>%
@@ -48,7 +67,9 @@ server <- function(input, output) {
   })
   
   
-  ## PLOT 1
+  ## ACTUALS 
+  
+  ### LINE PLOT
    output$line_plot <- renderPlot({
       # generate plot
       x <- trend_type
@@ -63,14 +84,7 @@ server <- function(input, output) {
    })
    
    
-   ## SUMMARY TEXT
-   output$summary_stats <- renderPrint({
-
-  print(stats_table())
-     
-   })
-   
-   ## PLOT 2
+   ### BOX PLOT
    output$box_plot <- renderPlot({
      # generate plot
      x <- trend_type
@@ -80,7 +94,16 @@ server <- function(input, output) {
        geom_boxplot(alpha = 0.5) +
        ylim(0, 6) +
        theme_minimal()
+     
+     
+   })
+   
+   
+   
+   ## TARGET
+   output$summary_stats <- renderPrint({
 
+  print(stats_table())
      
    })
    
